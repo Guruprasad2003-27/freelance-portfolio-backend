@@ -11,7 +11,7 @@ const app = express();
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
-    ? ['https://YOUR_GITHUB_PAGES_URL.github.io']
+    ? ['https://guruprasad2003-27.github.io']
     : ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true
 }));
