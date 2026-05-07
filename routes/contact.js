@@ -1,17 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const Contact = require('../models/Contact');
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 router.post('/', async (req, res) => {
   try {
@@ -20,24 +12,21 @@ router.post('/', async (req, res) => {
     const contact = new Contact({ name, email, phone, projectType, budget, message });
     await contact.save();
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER,
-      subject: `New Project Request: ${projectType} from ${name}`,
-      html: `
-        <h2>New Project Request</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
-        <p><strong>Project Type:</strong> ${projectType}</p>
-        <p><strong>Budget:</strong> ${budget || 'Not specified'}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message}</p>
-      `
-    };
-
     try {
-      await transporter.sendMail(mailOptions);
+      await resend.emails.send({
+        from: 'Portfolio <onboarding@resend.dev>',
+        to: process.env.EMAIL_USER,
+        subject: `New Project Request: ${projectType} from ${name}`,
+        html: `
+          <h2>New Project Request</h2>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
+          <p><strong>Project Type:</strong> ${projectType}</p>
+          <p><strong>Budget:</strong> ${budget || 'Not specified'}</p>
+          <p><strong>Message:</strong> ${message}</p>
+        `
+      });
     } catch (emailErr) {
       console.error('Email failed:', emailErr.message);
     }
