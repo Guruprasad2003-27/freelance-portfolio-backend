@@ -36,7 +36,11 @@ router.post('/', async (req, res) => {
       `
     };
 
-    await transporter.sendMail(mailOptions);
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (emailErr) {
+      console.error('Email failed:', emailErr.message);
+    }
 
     const waMessage = encodeURIComponent(
       `Hi! I'm ${name}. I'm interested in: ${projectType}.\nBudget: ${budget || 'TBD'}\n\n${message}`
